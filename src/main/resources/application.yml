@@ -1,5 +1,16 @@
 server:
-  port: 8888
+  port: 9999
 spring:
+  datasource:
+    username: root
+    url: jdbc:mysql://8.129.173.129:3306/gang?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+    password: 100544
+    driver-class-name: com.mysql.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   application:
-    name: docker-demo
+    name: ssm-demo
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
