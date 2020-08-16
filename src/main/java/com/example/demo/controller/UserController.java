@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.model.RegisterAuthDO;
 import com.example.demo.service.RegisterAuthService;
 import com.example.demo.service.SayHelloService;
+import com.example.demo.utils.MessageSourceHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,10 +27,14 @@ public class UserController {
     private SayHelloService sayHelloService;
 
     @Resource
+    private MessageSourceHandler messageSourceHandler;
+
+    @Resource
     private RegisterAuthService registerAuthService;
 
     @RequestMapping("hello")
     public String sayHello(String name) {
+        System.out.println(messageSourceHandler.getMessage("RENEW_RESUME_MEMBER_BENEFITS"));
         String result = sayHelloService.sayHello(name);
         return result;
     }
