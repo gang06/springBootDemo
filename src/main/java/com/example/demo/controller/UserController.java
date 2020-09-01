@@ -1,10 +1,13 @@
 package com.example.demo.controller;
 
+import com.example.demo.event.EventPublish;
 import com.example.demo.model.RegisterAuthDO;
 import com.example.demo.service.RegisterAuthService;
 import com.example.demo.service.SayHelloService;
 import com.example.demo.utils.MessageSourceHandler;
-import org.springframework.stereotype.Controller;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +24,7 @@ import java.util.List;
 @RestController
 @ResponseBody
 @RequestMapping(value = "/user/")
+@Slf4j
 public class UserController {
 
     @Resource
@@ -32,6 +36,9 @@ public class UserController {
     @Resource
     private RegisterAuthService registerAuthService;
 
+    @Resource
+    private EventPublish eventPublish;
+
     @RequestMapping("hello")
     public String sayHello(String name) {
         System.out.println(messageSourceHandler.getMessage("RENEW_RESUME_MEMBER_BENEFITS"));
@@ -39,12 +46,23 @@ public class UserController {
         return result;
     }
 
+    @RequestMapping("buy_member")
+    public String buyMember(String name) {
+        eventPublish.publish(name);
+        System.out.println("发送事件通知之后.");
+        return name;
+    }
+
     @RequestMapping(value = "register_records", method = RequestMethod.GET)
-    public List<RegisterAuthDO> listRegisterRecords(String openId) {
+    public PageInfo<RegisterAuthDO> listRegisterRecords(String openId) {
+        PageHelper.startPage(2, 2);
         RegisterAuthDO queryParam = new RegisterAuthDO();
         queryParam.setOpenId(openId);
         List<RegisterAuthDO> result = registerAuthService.list(queryParam);
-        return result;
+        PageInfo<RegisterAuthDO> pageInfo = new PageInfo<>(result);
+        log.info("pageInfo={}", pageInfo);
+
+        return pageInfo;
     }
 
     @RequestMapping(value = "/upload_head_url", method = RequestMethod.POST)
