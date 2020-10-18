@@ -13,7 +13,7 @@ public class ExecutorServiceConfiguration {
     private final int maxnThreadNum = 100;
 
 
-    @Bean(name = "")
+    @Bean(name = "systemExecutor")
     public ExecutorService initSystemExecutor(){
         //ThreadPoolExecutor executor = new ThreadPoolExecutor(coreThreadNum,maxnThreadNum,);
         return null;

@@ -5,6 +5,7 @@ import com.example.demo.model.RegisterAuthDO;
 import com.example.demo.service.RegisterAuthService;
 import com.example.demo.service.SayHelloService;
 import com.example.demo.utils.MessageSourceHandler;
+import com.example.demo.vo.MembershipInfoVO;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -47,10 +48,9 @@ public class UserController {
     }
 
     @RequestMapping("buy_member")
-    public String buyMember(String name) {
-        eventPublish.publish(name);
-        System.out.println("发送事件通知之后.");
-        return name;
+    public MembershipInfoVO buyMember(String name) {
+        MembershipInfoVO membershipInfoVO = new MembershipInfoVO();
+        return membershipInfoVO;
     }
 
     @RequestMapping(value = "register_records", method = RequestMethod.GET)

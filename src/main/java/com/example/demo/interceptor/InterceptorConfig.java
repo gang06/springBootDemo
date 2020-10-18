@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  * @description: TODO
  * @date 2019/11/15 16:38
  */
-@Configuration
+//@Configuration
 public class InterceptorConfig extends WebMvcConfigurationSupport {
 
     @Bean
