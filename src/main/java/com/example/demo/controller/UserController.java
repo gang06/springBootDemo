@@ -53,7 +53,7 @@ public class UserController {
         return membershipInfoVO;
     }
 
-    @RequestMapping(value = "register_records", method = RequestMethod.GET)
+    @RequestMapping(value = "register/records", method = RequestMethod.GET)
     public PageInfo<RegisterAuthDO> listRegisterRecords(String openId) {
         PageHelper.startPage(2, 2);
         RegisterAuthDO queryParam = new RegisterAuthDO();
