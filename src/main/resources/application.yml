@@ -5,7 +5,13 @@ spring:
     username: root
     url: jdbc:mysql://8.129.173.129:3306/gang?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
     password: 100544
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+  redis:
+    host: 8.129.173.129
+    database: 0
+    port: 6379
+    password: java1122
   servlet:
     multipart:
       max-file-size: 10MB
