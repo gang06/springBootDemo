@@ -8,6 +8,8 @@ import com.example.demo.utils.MessageSourceHandler;
 import com.example.demo.vo.MembershipInfoVO;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +28,7 @@ import java.util.List;
 @ResponseBody
 @RequestMapping(value = "/user/")
 @Slf4j
+@Api(value = "用户模块")
 public class UserController {
 
     @Resource
@@ -40,14 +43,15 @@ public class UserController {
     @Resource
     private EventPublish eventPublish;
 
-    @RequestMapping("hello")
+    @RequestMapping(value = "hello", method = RequestMethod.GET)
+    @ApiOperation(value = "打招呼")
     public String sayHello(String name) {
         System.out.println(messageSourceHandler.getMessage("RENEW_RESUME_MEMBER_BENEFITS"));
         String result = sayHelloService.sayHello(name);
         return result;
     }
 
-    @RequestMapping("buy_member")
+    @RequestMapping(value = "buy_member", method = RequestMethod.POST)
     public MembershipInfoVO buyMember(String name) {
         MembershipInfoVO membershipInfoVO = new MembershipInfoVO();
         return membershipInfoVO;
