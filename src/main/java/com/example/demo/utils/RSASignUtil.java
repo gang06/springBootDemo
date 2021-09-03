@@ -61,7 +61,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.nio.charset.Charset;
@@ -70,16 +69,14 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 
-public class SignUtil {
-	private SignUtil() {
+public class RSASignUtil {
+	private RSASignUtil() {
 	}
 
-	private static final Logger log = LoggerFactory.getLogger(SignUtil.class);
+	private static final Logger log = LoggerFactory.getLogger(RSASignUtil.class);
 
 	/*--	Defines the algorithm and for en/decryption and digest	--*/
-	public static final String SIGN_ALGORITHM = "RSA";
 	public static final String DIGEST_ALGORITHM = "SHA-256";
 
 	public static final String CHARSET_UTF8 = "UTF-8";
@@ -103,8 +100,7 @@ public class SignUtil {
 
 		if (bDigest != null) {
 			/*--	Step #2. encrypt the digest as the signature by the private key 	--*/
-			byte[] bSign = encryptDigest(aPrikey, bDigest);
-			//byte[] bSign = getSignatureSHA256(aPrikey, bDigest);
+			byte[] bSign = getSignatureSHA256(aPrikey, bDigest);
 			return new String(Base64.encodeBase64(bSign));
 		} else {
 			return null;
@@ -142,16 +138,7 @@ public class SignUtil {
 
 			/*--	Step #2. Decrypt the signature back to the plain digest by the public key 	--*/
 			byte[] bSignature = Base64.decodeBase64(aSignature);
-			/*signResult = verifySignatureSHA256(pubkey,bDigest,bSignature);
-			return signResult;*/
-			byte[] bDigestNew = decryptSignature(pubkey, bSignature);
-
-			if (bDigestNew == null) {
-				return signResult;
-			}
-
-			//*--	Step #3. Verify if the 2 digests are matched, otherwise the validation fails.	--*//*
-			signResult = Arrays.equals(bDigest, bDigestNew);
+			signResult = verifySignatureSHA256(pubkey,bDigest,bSignature);
 			return signResult;
 		} catch (Exception e) {
 			log.error("VerifySignature sign:{}, data:{}", new String[] { aSignature, aData }, e);
@@ -159,15 +146,6 @@ public class SignUtil {
 		} finally {
 			log.debug("VerifySignature  sign: {} ,data:{},result :{}", aSignature, aData, signResult);
 		}
-	}
-
-	public static boolean verifySignature(String keyPath, String aSignature, String aData) {
-		if ((keyPath == null) || keyPath.isEmpty() || (aSignature == null) || (aData == null)) {
-			return false;
-		}
-
-		RSAPublicKey publicKey = (RSAPublicKey) KeyUtil.restorePubKey(keyPath);
-		return verifySignature(publicKey, aSignature, aData);
 	}
 
 	public static boolean verifySignatureByStr(String publicKeyStr, String aSignature, String aData) throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -216,35 +194,4 @@ public class SignUtil {
 		}
 	}
 
-	private static byte[] encryptDigest(RSAPrivateKey aPrikey, byte[] aDigest)
-			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-
-		if ((aPrikey == null) || (aDigest == null)) {
-			return null;
-		}
-
-		/*--	Use the private key to sign the data	--*/
-		Cipher cipher = null;
-
-		/*--	use RSA to encrypt the plain text --*/
-		cipher = Cipher.getInstance(SIGN_ALGORITHM);
-		cipher.init(Cipher.ENCRYPT_MODE, aPrikey);
-		return cipher.doFinal(aDigest);
-	}
-
-	public static byte[] decryptSignature(RSAPublicKey aPubkey, byte[] aSignature)
-			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-
-		if ((aPubkey == null) || (aSignature == null)) {
-			return null;
-		}
-
-		/*--	Use the public key to verify the signature	--*/
-		Cipher cipher = null;
-
-		/*--	use RSA to decrypt the plain text --*/
-		cipher = Cipher.getInstance(SIGN_ALGORITHM);
-		cipher.init(Cipher.DECRYPT_MODE, aPubkey);
-		return cipher.doFinal(aSignature);
-	}
 }

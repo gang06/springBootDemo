@@ -41,119 +41,76 @@ package com.example.demo.utils;
 
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
 public class KeyUtil {
-	private KeyUtil() {
-	}
+    private KeyUtil() {
+    }
 
-	/*--	Defines the algorithm and for en/decryption and the strength	--*/
-	public static final String SIGN_ALGORITHM = "RSA";
-	public static final int RSA_STRENGTH = 1024;
+    /*--	Defines the algorithm and for en/decryption and the strength	--*/
+    public static final String RSA_ALGORITHM = "RSA";
+    public static final int RSA_STRENGTH = 1024;
 
-	public static final String RSA_PRVKEY = "jd_private.key";
-	public static final String RSA_PUBKEY = "jd_public.key";
+    /*--	To generate a RSA keypair	--*/
+    public static KeyPair keyGen() {
 
-	/*--	To generate a RSA keypair	--*/
-	public static KeyPair keyGen() {
+        KeyPairGenerator keygen = null;
 
-		KeyPairGenerator keygen = null;
+        /*--	Create the key generator	--*/
+        try {
+            keygen = KeyPairGenerator.getInstance(RSA_ALGORITHM);
+        } catch (NoSuchAlgorithmException e) {
+            return null;
+        }
 
-		/*--	Create the key generator	--*/
-		try {
-			keygen = KeyPairGenerator.getInstance(SIGN_ALGORITHM);
-		} catch (NoSuchAlgorithmException e) {
-			return null;
-		}
+        /*--	To initialize a pseudo random number generator --*/
+        SecureRandom secrand = new SecureRandom();
 
-		/*--	To initialize a pseudo random number generator --*/
-		SecureRandom secrand = new SecureRandom();
+        secrand.setSeed(getPrn());
+        keygen.initialize(RSA_STRENGTH, secrand);
 
-		secrand.setSeed(getPrn());
-		keygen.initialize(RSA_STRENGTH, secrand);
+        /*--	To generate key pair, the performance depends on strength	--*/
+        keygen.initialize(RSA_STRENGTH);
 
-		/*--	To generate key pair, the performance depends on strength	--*/
-		keygen.initialize(RSA_STRENGTH);
+        return keygen.generateKeyPair();
+    }
 
-		return keygen.generateKeyPair();
-	}
+    /**
+     * 获取私钥
+     *
+     * @param privateKey 私钥字符串
+     * @return
+     */
+    public static PrivateKey getPrvKey(String privateKey) throws Exception {
+        KeyFactory keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
+        byte[] decodedKey = Base64.decodeBase64(privateKey.getBytes());
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedKey);
+        return keyFactory.generatePrivate(keySpec);
+    }
 
-	/*--	To backup the key pair just generated	--*/
-	public static boolean backupKey(KeyPair akey) {
-		if (akey == null) {
-			return false;
-		}
+    /**
+     * 得到公钥
+     * @param publicKey  密钥字符串（经过base64编码）
+     * @throws Exception
+     */
+    public static PublicKey getPublicKey(String publicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        // 通过X509编码的Key指令获得公钥对象
+        KeyFactory keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(Base64.decodeBase64(publicKey));
+        PublicKey key = keyFactory.generatePublic(x509KeySpec);
+        return key;
+    }
 
-		/*--	To save the private key and public key respectively	--*/
-		try (ObjectOutputStream prvOut = new ObjectOutputStream(new FileOutputStream(RSA_PRVKEY));
-			 ObjectOutputStream pubOut = new ObjectOutputStream(new FileOutputStream(RSA_PUBKEY))) {
-			prvOut.writeObject(akey.getPrivate());
-			pubOut.writeObject(akey.getPublic());
-		} catch (Exception e) {
-			return false;
-		}
 
-		return true;
-	}
+    /*--	To get a pseudo number, shall be revisited --*/
+    private static byte[] getPrn() {
 
-	public static PrivateKey restorePrvKey() throws Exception {
-		return KeyUtil.getPrvKey(RSA_PRVKEY);
-	}
+        Date date = new Date();
+        return date.toString().getBytes();
 
-	public static PrivateKey restorePrvKey(String privateKeyPath) throws Exception {
-		return KeyUtil.getPrvKey(privateKeyPath);
-	}
-
-	/*public static PrivateKey getPrvKey(String privateKeyPath){
-		*//*--	To read the private key from the specific file.	--*//*
-		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(privateKeyPath))) {
-			return (PrivateKey) in.readObject();
-		} catch (Exception e) {
-			return null;
-		}
-	}*/
-
-	/**
-	 * 获取私钥
-	 *
-	 * @param privateKey 私钥字符串
-	 * @return
-	 */
-	public static PrivateKey getPrvKey(String privateKey) throws Exception {
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		byte[] decodedKey = Base64.decodeBase64(privateKey.getBytes());
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedKey);
-		return keyFactory.generatePrivate(keySpec);
-	}
-
-	public static PublicKey restorePubKey() {
-		return KeyUtil.getPubKey(RSA_PUBKEY);
-	}
-
-	public static PublicKey restorePubKey(String pubKeyPath) {
-		return KeyUtil.getPubKey(pubKeyPath);
-	}
-
-	public static PublicKey getPubKey(String pubKeyPath){
-		/*--	To read the public key from the specific file.	--*/
-		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(pubKeyPath))) {
-			return (PublicKey) in.readObject();
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	/*--	To get a pseudo number, shall be revisited --*/
-	private static byte[] getPrn() {
-
-		Date date = new Date();
-		return date.toString().getBytes();
-
-	}
+    }
 }

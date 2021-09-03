@@ -10,11 +10,7 @@ public class Test {
     }
 
     public static void main(String[] args) throws SecurityException, NoSuchMethodException {
-        Method method = Test.class.getMethod("myMethod", String.class, String.class);
-
-        for (Parameter parameter : method.getParameters()) {
-            System.out.println(parameter.getName());
-        }
+        System.out.println(System.currentTimeMillis());
     }
 
 }
