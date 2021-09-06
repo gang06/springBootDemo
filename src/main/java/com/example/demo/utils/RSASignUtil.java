@@ -56,6 +56,7 @@
 
 package com.example.demo.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,11 +71,10 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-public class RSASignUtil {
+@Slf4j
+public abstract class RSASignUtil {
 	private RSASignUtil() {
 	}
-
-	private static final Logger log = LoggerFactory.getLogger(RSASignUtil.class);
 
 	/*--	Defines the algorithm and for en/decryption and digest	--*/
 	public static final String DIGEST_ALGORITHM = "SHA-256";

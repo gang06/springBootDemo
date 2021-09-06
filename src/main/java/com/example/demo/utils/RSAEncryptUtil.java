@@ -5,7 +5,7 @@ import sun.misc.BASE64Encoder;
 
 import javax.crypto.Cipher;
 
-public class RSAEncryptUtil {
+public abstract class RSAEncryptUtil {
     //RSA加密
     public static String encryptWithRSA(String content, String publicKey) throws Exception {
 

@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.example.demo.utils.AESUtil;
 import com.example.demo.utils.RSAEncryptUtil;
@@ -11,11 +12,9 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Slf4j
-public class MainTests {
+public class ServerTests {
     //RSA签名的私钥
     private static String SIGN_PRIVATE_KEY = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAMUDGyGc16VaLerV/mlcu2e37JbFlUgYxRkB+skQm7wdFimvhUYo1D/l5BPLsUmRlv460Ub9TLYKC/tGIwveuodcJefDsStuylM6zgcfNTpyXWmz4MjjsieFmvbmurnVtl2ol1KftBFUQtD/OheTZZHPokMxzLNfLcESywA2c4hdAgMBAAECgYBLAXa34lW7j0zCBnzYskRrJXv+nvTJwRxw++7108vm35ALiNaNsoe0WBrwanFx1+sLmWsJwvAMsmCDZt167G5I5YjClAYfnDe3t/OUaVkUTGO32TCB4twx4BDnH/vSfy+EzdTu3CASvAdgh4HeCDRFTIvpMwQPJqo4m/WM4szKwQJBAOODyB2VW04+SugMEdS7erqwBGTqnoqShzmBP0eUUu3Hks9ECBaf4YbCtyd+4b4JdqSWYJGE6LsRld4cDvp/VHECQQDdrapD4aRVX3k3+cead/eeuX1uUBWRUTyLucXlCDt5kIsJpzY1p5Mb+pSV6JsRt4dfhlT/DOg2qWA3ymEjOvitAkEA1YclFb7Lhs+n9cj+Iy4hrXztYtlgGqYTC8Fl5oQqoMeh3az3+mPrglLVGthWfcjb9PS9hVW8J3YFtgOXezptwQJAHo6z68uM5Z/Vi9vIoghrf9u96JjtgCyclf4zw1CRMj60i84a8OZ6pt6x4MBBr/2GkapoyQe0cuSCOO6S2VJluQJBANFP76otWDX0Y9MgVzWHQqQlQoGPKDbWOu+v2W3jBaj88MubNdGACz+IRupU1Kw0qMSJnjmu4TZUcL3RzNY00vo=";
     //RSA签名的公钥
@@ -29,59 +28,34 @@ public class MainTests {
 
     public static void main(String[] args) throws Exception {
 
-        //组装业务参数
-        JSONObject data = new JSONObject();
-        data.put("name", "张三");
-        data.put("city", "长沙");
-        String jsonParam = data.toJSONString();
+        String request = "{\"data\":\"43HS3XEaITTEufSiHrzl+kyh4oPDP5Z5jfs6jhzC9KL3rDwF+fI6Td0ZcsgoF9vn\",\"secretKey\":\"bZ5cT/wDKwCoUoTu7rChDAu+toN3OYK6x8Mh3bqNe0Ap9fSG4TVeL0NEt79oty8rxDnuQQNcQlvQ\\r\\nq1jaDGKcn3Mrr0cl9kLL/qtbNhWMkM7OK7dcL+CFNH/jkY4FEvkn94yRTtBS19kMxcjc50fRSwYZ\\r\\n8d1ypI1PVWF8QB6iuLA=\",\"appName\":\"LY\",\"sign\":\"Wi5IX3bhIFg6XScGf54Fghzl3DRF1oqlY+U5EUrLBSh1eMtZA2ioX/Rglr1YMLCec4F7hsr1bpk6datvq2D/DqAnVmupf4cfKb8cPxboHFSfceB44YzgPXlr5YXun6GUDU9tWb85jJ9EVZg0lFUrGJ6AbP1oSCigzYxWC2iQP7k=\",\"version\":\"1.0\",\"timestamp\":1630940747301}";
+        TreeMap<String, Object> requestMap = JSON.parseObject(request, TreeMap.class);
+        String sign = (String) requestMap.remove("sign");
+        String secretKeyStr = (String) requestMap.remove("secretKey");
+        //服务端先将通过RSA算法解密AES加密所用的秘钥
+        String encrypt = (String) requestMap.get("data");
+        String aesServerSecretKey = RSAEncryptUtil.decryptWithRSA(secretKeyStr, DECRYPT_PRIVATE_KEY);
+        byte[] secretKeyArray = Base64.getDecoder().decode(aesServerSecretKey);
+        SecretKeySpec secretKey = new SecretKeySpec(secretKeyArray, AESUtil.KEY_ALGORITHM);
+        String decrypt = AESUtil.decrypt(encrypt, secretKey);
+        log.info("解密结果:decrypt={}", decrypt);
+        //使用解密后的数据去进行数字签名
+        requestMap.put("data", decrypt);
         /**
          * 将业务参数变成一个json串然后与版本号及时间戳字段按ascii排序并进行拼接进行签名
          * 1) 排序：将筛选的参数按照第一个字符的键值ASCII码递增排序（字母升序排序），如果遇到相同字符则按照第二个字符的键值ASCII码递增排序，以此类推。
          * 2) 拼接：将排序后的参数与其对应值，组合成“参数=参数值”的格式，并且把这些参数用&字符连接起来，此时生成的字符串为待签名字符串。则需将待签名字符串和私钥放入SHA2 with RSA(1024)算法中得出签名，并做Base64得到 sign的值。
          */
-        Map<String, Object> signParamMap = new TreeMap<>();
-        signParamMap.put("data", jsonParam);
-        //接口协议1.0版本
-        signParamMap.put("version", "1.0");
-        //HG、LY、TW;对应系统的缩写
-        signParamMap.put("appName", "LY");
-        long timestamp = System.currentTimeMillis();
-        signParamMap.put("timestamp", timestamp);//时间戳用来做防回放攻击,与当前时间对比,限制某个时间内的数据有效
         StringBuilder param = new StringBuilder();
-        Set<Map.Entry<String, Object>> entrySet = signParamMap.entrySet();
+        Set<Map.Entry<String, Object>> entrySet = requestMap.entrySet();
         entrySet.forEach(entry -> param.append(entry.getKey()).append("=").append(entry.getValue()).append("&"));
         String signParam = param.substring(0, param.length() - 1);
-        log.info("签名前参数signParam={}", signParam);
-        String sign = RSASignUtil.createSignature(SIGN_PRIVATE_KEY, signParam);
-        log.info("数字签名sign={}", sign);
+        log.info("验签前参数signParam={}", signParam);
         boolean verifySignatureResult = RSASignUtil.verifySignatureByStr(SIGN_PUBLIC_KEY, sign, signParam);
         log.info("验签:{}", verifySignatureResult ? "成功" : "失败");
 
-        //客户端将明文数据采用AES加密,AES秘钥采用RSA进行加密
-        SecretKeySpec clientSecretKey = AESUtil.getSecretKey();
-        String encrypt = AESUtil.encrypt(jsonParam, clientSecretKey);
-        String aesClientSecretKey = Base64.getEncoder().encodeToString(clientSecretKey.getEncoded());
-        String encryptSecretKey = RSAEncryptUtil.encryptWithRSA(aesClientSecretKey, ENCRYPT_PUBLIC_KEY);
 
-        //服务端先将通过RSA算法解密AES加密所用的秘钥
-        String aesServerSecretKey = RSAEncryptUtil.decryptWithRSA(encryptSecretKey, DECRYPT_PRIVATE_KEY);
-        byte[] secretKeyArray = Base64.getDecoder().decode(aesServerSecretKey);
-        SecretKeySpec serverSecretKey = new SecretKeySpec(secretKeyArray, AESUtil.KEY_ALGORITHM);
-        String decrypt = AESUtil.decrypt(encrypt, serverSecretKey);
-        log.info("加解密结果:{}", jsonParam.equals(decrypt) ? "成功" : "失败");
 
-        //客户端发送的报文格式
-        JSONObject request = new JSONObject();
-        //数字签名
-        request.put("sign", sign);
-        //加密后得字符串,解密出来之后是一个json串
-        request.put("data", encrypt);
-        //AES加密算法的秘钥,这里已经通过RSA算法进行加密传输
-        request.put("secretKey", encryptSecretKey);
-        request.put("timestamp", timestamp);
-        request.put("version", "1.0");
-        request.put("appName", "LY");
-        log.info("数据格式:{}", request.toJSONString());
     }
 
 
