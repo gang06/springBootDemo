@@ -28,7 +28,7 @@ public class ServerTests {
 
     public static void main(String[] args) throws Exception {
 
-        String request = "{\"data\":\"43HS3XEaITTEufSiHrzl+kyh4oPDP5Z5jfs6jhzC9KL3rDwF+fI6Td0ZcsgoF9vn\",\"secretKey\":\"bZ5cT/wDKwCoUoTu7rChDAu+toN3OYK6x8Mh3bqNe0Ap9fSG4TVeL0NEt79oty8rxDnuQQNcQlvQ\\r\\nq1jaDGKcn3Mrr0cl9kLL/qtbNhWMkM7OK7dcL+CFNH/jkY4FEvkn94yRTtBS19kMxcjc50fRSwYZ\\r\\n8d1ypI1PVWF8QB6iuLA=\",\"appName\":\"LY\",\"sign\":\"Wi5IX3bhIFg6XScGf54Fghzl3DRF1oqlY+U5EUrLBSh1eMtZA2ioX/Rglr1YMLCec4F7hsr1bpk6datvq2D/DqAnVmupf4cfKb8cPxboHFSfceB44YzgPXlr5YXun6GUDU9tWb85jJ9EVZg0lFUrGJ6AbP1oSCigzYxWC2iQP7k=\",\"version\":\"1.0\",\"timestamp\":1630940747301}";
+        String request = "{\"data\":\"oivpI4pbCB5OYcZ2XHAOBGzscCxvoP6BD00yC1BCItMCvf2HT3o8cOklE74Sv0J/\",\"secretKey\":\"I2dHsouKsz+KFf+ZCW4KrKL5vJqBJGgdNUHR3M/4h5Bnojh/bvr7ORLgigTLmMTayZOUlsom9sq8\\r\\nqLDIBchD0Y6zshS1j82N8KyCtUc9AbR+rSe2O1hPvFmTRbM5RPNOXFPh+VpVzgnfyo929UOH3i9n\\r\\njpexpM+3UJ3NZGMk2EE=\",\"appName\":\"LY\",\"sign\":\"Xtli0bTGY+iWI2E4A7EAJxtLo+PO9z876vU4GDT963qbEkUg9OlV7TEqziRJEbeZA6qHMb0B9okMh7MxweGTny9I+dpxvN6Iu7pjAWg5Y6me7zxA/UJ47z+PdazXiAqjgtN+1S1Ne5viXYi8WOE2nXb3SIHJ9WgTDeq6LNezFPs=\",\"version\":\"1.0\",\"timestamp\":1630983340567}";
         TreeMap<String, Object> requestMap = JSON.parseObject(request, TreeMap.class);
         String sign = (String) requestMap.remove("sign");
         String secretKeyStr = (String) requestMap.remove("secretKey");

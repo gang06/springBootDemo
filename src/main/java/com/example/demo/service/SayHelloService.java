@@ -9,5 +9,7 @@ package com.example.demo.service;
  */
 public interface SayHelloService {
 
+    String SLOGON = "正直 进取";
+
     String sayHello(String name);
 }

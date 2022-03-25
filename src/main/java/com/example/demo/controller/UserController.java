@@ -66,34 +66,8 @@ public class UserController {
 
     @RequestMapping(value = "hello", method = RequestMethod.POST)
     @ApiOperation(value = "打招呼")
-    public String sayHello(@RequestBody TestModel testModel) throws Exception {
-        // 生成签名
-        StringBuilder param = new StringBuilder();
-        Map<String, Object> signParamMap = new TreeMap<>();
-        String jsonParam = JSON.toJSONString(testModel.getData());
-        signParamMap.put("data", jsonParam);
-        signParamMap.put("version", "1.0");
-        signParamMap.put("timestamp", 1630658637577L);//时间戳用来做防回放攻击,与当前时间对比,限制某个时间内的数据有效
-        Set<Map.Entry<String, Object>> entrySet = signParamMap.entrySet();
-        entrySet.forEach(entry -> param.append(entry.getKey()).append("=").append(entry.getValue()).append("&"));
-        String finalParam = param.substring(0, param.length() - 1);
-        log.info(finalParam);
-        String sign = RSASignUtil.createSignature(SIGN_PRIVATE_KEY, finalParam);
-        log.info("数字签名sign={}", sign);
-        boolean verifySignatureResult = RSASignUtil.verifySignatureByStr(SIGN_PUBLIC_KEY, sign, finalParam);
-        log.info("验签:{}", verifySignatureResult ? "成功" : "失败");
-
-        //加解密
-        SecretKeySpec secretKey = AESUtil.getSecretKey();
-        String aesSecretKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
-        String encrypt = AESUtil.encrypt(jsonParam,secretKey);
-        String decrypt = AESUtil.decrypt(encrypt,secretKey);
-        log.info("加解密结果:{}", jsonParam.equals(decrypt) ? "成功" : "失败");
-        byte[] secretKeyArray = Base64.getDecoder().decode(aesSecretKey);
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyArray, KEY_ALGORITHM);
-
-        String decrypt2 = AESUtil.decrypt(encrypt,secretKeySpec);
-        log.info("加解密结果:{}", jsonParam.equals(decrypt2) ? "成功" : "失败");
+    public String sayHello(@RequestBody RegisterAuthDO registerAuthDO) throws Exception {
+        sayHelloService.sayHello(registerAuthDO.getOpenId());
         return "test";
     }
 
