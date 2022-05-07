@@ -68,7 +68,7 @@ public class UserController {
     @ApiOperation(value = "打招呼")
     public String sayHello(@RequestBody RegisterAuthDO registerAuthDO) throws Exception {
         sayHelloService.sayHello(registerAuthDO.getOpenId());
-        return "test";
+        return "testhaha";
     }
 
     @RequestMapping(value = "buy_member", method = RequestMethod.POST)
